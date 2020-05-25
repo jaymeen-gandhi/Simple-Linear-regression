@@ -1,0 +1,160 @@
+---
+title: "Week 5"
+author: "Jaymeen Gandhi"
+date: "February 25, 2020"
+output: html_document
+---
+
+```{r}
+require(tidyverse)
+```
+
+
+```{r}
+new_ads=read_csv('C:/Users/jayme/Downloads/new_cars.csv')
+classified_ads= read_csv('C:/Users/jayme/Downloads/current_ads.csv')
+```
+
+```{r}
+classified_ads ##(historical data)
+new_ads       ##(new data)
+```
+
+## Get the predicted target (price) in the new data using the historical data.
+
+
+```{r}
+my_model=lm(formula = price_eur ~  mileage  , data = classified_ads)
+summary(my_model)
+```
+
+```{r}
+f = price_eur ~ mileage
+#lm (f , data = classified_ads)
+
+```
+
+
+```{r}
+require(broom)
+```
+
+```{r}
+augment(my_model ,  classified_ads ) 
+## augment function is just used to calculate the r-square value. It is not used much.
+## If we have the mileage column we can grt the price.
+```
+
+```{r}
+(beta_zero = my_model$ coefficients[1])
+(beta_one = my_model $ coefficients[2])
+beta_zero
+beta_one
+```
+
+
+## Intecept + coeffeicent of the intercept * value
+## B0 + Mileage * Value of mileage
+```{r}
+20080.27 + -0.07342887 * 207000
+```
+
+## Error= Actual Price - Targetted Price
+```{r}
+1300.11 - 4880.494
+```
+
+```{r}
+ggplot(classified_ads, aes(x = mileage , y= price_eur)) + geom_point()
+```
+
+```{r}
+(beta_zero = my_model$ coefficients[1])
+(beta_one = my_model $ coefficients[2])
+beta_zero
+beta_one
+```
+
+## Price = intercept + coeffeicint * values of mileage
+
+```{r}
+new_ads %>% mutate(predicted_price = beta_zero + beta_one * mileage)
+```
+
+```{r}
+predict(my_model, newdata = new_ads)
+```
+
+##### New Model ######
+
+## Creating a model
+```{r}
+my_model2=lm(formula = price_eur ~  ratings  , data = classified_ads)
+summary(my_model2)
+```
+
+
+## Got the intercept and coefficint
+```{r}
+beta_zero = my_model2$ coefficients[1]
+beta_one = my_model2$ coefficients[2]
+beta_zero
+beta_one
+```
+
+## Substitute it to the formula
+```{r}
+new_ads %>% mutate(predicted_price = beta_zero + beta_one * ratings)
+```
+## Get the values
+```{r}
+predict(my_model2, newdata = new_ads)
+```
+
+```{r}
+classified_ads %>% mutate(fitted_values= my_model$fitted.values)
+```
+
+```{r}
+require(modelr)
+```
+
+```{r}
+rsquare(my_model,classified_ads)
+```
+
+
+```{r}
+#n=  nrow( classified_ads)
+#training_row=runif(n) > .3
+#sum(training_row)
+#training_data=classified_ads[training_row,]
+#testing_data=classified_ads[!training_row,]
+```
+
+##Another way (Best way)
+```{r}
+set.seed(2333)
+training_data=classified_ads %>% sample_frac(size = .7)
+testing_data = anti_join(classified_ads,traing_data,by='id')
+```
+
+```{r}
+f= price_eur ~ mileage
+model3 = lm(f, training_data)
+summary(model3)
+rsquare(model3,training_data)
+```
+
+```{r}
+testing_prediction = predict(model3 , testing_data)
+testing_data
+```
+
+
+## My work
+```{r}
+training.data= new_ads %>% sample_frac(size = .7)
+testing.data = anti_join(new_ads,training.data,by='id')
+```
+
